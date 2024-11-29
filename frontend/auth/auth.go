@@ -2,25 +2,20 @@ package auth
 
 import (
 	"bytes"
-
 	"fmt"
-
 	"os/exec"
-
 	"path/filepath"
 
-	"time"
-
 	"github.com/charmbracelet/bubbles/textinput"
-
 	tea "github.com/charmbracelet/bubbletea"
-
 	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
 	usernameInput textinput.Model
 	passwordInput textinput.Model
+	width         int
+	height        int
 }
 
 func NewModel() model {
@@ -41,8 +36,8 @@ func NewModel() model {
 	}
 }
 
-func (m model) Init() tea.Cmd {
-	return nil
+func (m model) GetUsername() string {
+	return m.usernameInput.Value()
 }
 
 func ValidateUser(username, password string) bool {
@@ -61,9 +56,11 @@ func ValidateUser(username, password string) bool {
 		return false
 	}
 
-	print(string(output))
-
 	return string(output) == "Valid!\n"
+}
+
+func (m model) Init() tea.Cmd {
+	return nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -79,13 +76,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.passwordInput.Focus()
 
 			} else if m.passwordInput.Focused() {
-				ValidateUser(m.usernameInput.Value(), m.passwordInput.Value())
-				time.Sleep(5 * time.Second)
-				return m, tea.Quit
+				if ValidateUser(m.usernameInput.Value(), m.passwordInput.Value()) {
+					return m, tea.Quit 
+				} else {
+					fmt.Println("Invalid login credentials!")
+					return m, nil
+				}
 			}
 		} else if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+
+		m.usernameInput.Width = m.width / 2
+		m.passwordInput.Width = m.width / 2
 	}
 
 	return m, cmd
