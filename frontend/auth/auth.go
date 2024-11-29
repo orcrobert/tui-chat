@@ -1,7 +1,13 @@
 package auth
 
 import (
+	"bytes"
+
 	"fmt"
+
+	"os/exec"
+
+	"path/filepath"
 
 	"time"
 
@@ -39,6 +45,27 @@ func (m model) Init() tea.Cmd {
 	return nil
 }
 
+func ValidateUser(username, password string) bool {
+	executablePath, err := filepath.Abs("../../build/validate")
+	if err != nil {
+		fmt.Println("Error determining executable path:", err)
+		return false
+	}
+
+	cmd := exec.Command(executablePath)
+	cmd.Stdin = bytes.NewBufferString(fmt.Sprintf("%s\n%s\n", username, password))
+
+	output, err := cmd.Output()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return false
+	}
+
+	print(string(output))
+
+	return string(output) == "Valid!\n"
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.usernameInput, cmd = m.usernameInput.Update(msg)
@@ -52,8 +79,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.passwordInput.Focus()
 
 			} else if m.passwordInput.Focused() {
-				m.passwordInput.Blur()
-				time.Sleep(2 * time.Second)
+				ValidateUser(m.usernameInput.Value(), m.passwordInput.Value())
+				time.Sleep(5 * time.Second)
 				return m, tea.Quit
 			}
 		} else if msg.String() == "ctrl+c" {
