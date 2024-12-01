@@ -53,6 +53,11 @@ void addUser(const string& username, const string& password) {
 
 int main() {
     initializeDatabase();
+
+    // add some users for testing
     addUser("root", "toor");
+    addUser("admin", "admin");
+    addUser("robert", "caca");
+
     return 0;
 }

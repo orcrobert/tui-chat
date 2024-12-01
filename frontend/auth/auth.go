@@ -3,8 +3,10 @@ package auth
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os/exec"
 	"path/filepath"
+	"tui-chat/chatview"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -77,10 +79,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			} else if m.passwordInput.Focused() {
 				if ValidateUser(m.usernameInput.Value(), m.passwordInput.Value()) {
-					return m, tea.Quit 
+					m.passwordInput.Blur()
+					fmt.Printf("Authenticated as %s\n", m.usernameInput.Value())
+					chatModel := chatview.NewModel(m.usernameInput.Value())
+
+					chatProgram := tea.NewProgram(chatModel)
+
+					if err := chatProgram.Start(); err != nil {
+						log.Fatal(err)
+					}
+
+					return m, tea.Quit
 				} else {
 					fmt.Println("Invalid login credentials!")
-					return m, nil
+					return m, tea.Quit
 				}
 			}
 		} else if msg.String() == "ctrl+c" {
