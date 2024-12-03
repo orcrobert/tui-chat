@@ -12,8 +12,11 @@ fi
 
 echo "Compiling backend source files..."
 
-clang++ -std=c++17 -o ../build/validate ../backend/validate.cpp -lsqlite3
-clang++ -std=c++17 -o ../build/init_db ../backend/init_db.cpp -lsqlite3
+clang++ -std=c++17 -o ../build/validate ../backend/db/validate.cpp -lsqlite3
+clang++ -std=c++17 -o ../build/init_db ../backend/db/init_db.cpp -lsqlite3
+clang++ -std=c++17 -o ../build/local_server ../backend/server/local/server.cpp -pthread
+clang++ -std=c++17 -o ../build/local_client ../backend/server/local/client.cpp -pthread
+
 
 echo "Running backend init executables..."
 cd ../build/

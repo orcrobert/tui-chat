@@ -81,8 +81,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if ValidateUser(m.usernameInput.Value(), m.passwordInput.Value()) {
 					m.passwordInput.Blur()
 					fmt.Printf("Authenticated as %s\n", m.usernameInput.Value())
-					chatModel := chatview.NewModel(m.usernameInput.Value())
-
+					
+					chatModel, err := chatview.NewModel(m.usernameInput.Value())
+					if err != nil {
+						log.Fatal(err)
+					}
 					chatProgram := tea.NewProgram(chatModel)
 
 					if err := chatProgram.Start(); err != nil {
